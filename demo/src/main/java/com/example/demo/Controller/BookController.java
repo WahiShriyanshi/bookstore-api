@@ -1,17 +1,17 @@
 package com.example.demo.Controller;
 
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import com.example.demo.Entity.*;
+import com.example.demo.Exception.BookNotFoundExecption;
+import com.example.demo.Exception.InvalidAddBookRequestException;
+import com.example.demo.Exception.NoBookPresentException;
 import com.example.demo.Service.BookService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 public class BookController {
-	List<Book> list = new ArrayList<>();
+	// List<Book> list = new ArrayList<>();
 
 	private final BookService bookService;
 
@@ -20,47 +20,43 @@ public class BookController {
 	}
 
 	@GetMapping("/books")
-	public ResponseEntity<List<Book>> showBooks() {
-		list = bookService.showBooks();
-		return ResponseEntity.ok(list);
+	public ResponseEntity<List<Book>> showBooks() throws NoBookPresentException {
+		return ResponseEntity.ok(bookService.showBooks());
 	}
 
-	@GetMapping("/books/{id}")
-	public ResponseEntity<Book> showBookById(@PathVariable int id) {
-
+	@GetMapping("/book/{id}")
+	public ResponseEntity<Book> showBookById(@PathVariable int id) throws BookNotFoundExecption {
 		Book b = bookService.showBookById(id);
-		if (b == null) {
-			return ResponseEntity.notFound().build();
-		}
 		return ResponseEntity.ok(b);
 	}
 
 	@GetMapping("/bookname")
-	public List<Book> showBookByName(@RequestParam(required = false) String name) {
-		return bookService.showBookByName(name);
+	public ResponseEntity<List<Book>> showBookByName(@RequestParam(required = false) String name)
+			throws BookNotFoundExecption {
+		return ResponseEntity.ok(bookService.showBookByName(name));
 	}
 
 	@GetMapping("/bookgenre")
-	public List<Book> showBookByGenre(@RequestParam(required = false) String genre) {
-		return bookService.searchByGenre(genre);
+	public ResponseEntity<List<Book>> showBookByGenre(@RequestParam(required = false) String genre)
+			throws BookNotFoundExecption {
+		return ResponseEntity.ok(bookService.searchByGenre(genre));
 	}
 
-	@GetMapping("/book/{id}")
-	public String isType(@PathVariable int id) {
-		return bookService.isType(id);
+	@GetMapping("/booktype/{id}")
+	public ResponseEntity<String> isType(@PathVariable int id) throws BookNotFoundExecption {
+
+		return ResponseEntity.ok(bookService.isType(id));
+
 	}
 
 	@PostMapping("/books")
-	public ResponseEntity<String> addBook(Book b) {
-		// if (b.getBookId() == 0 || b.getBookName() == null || b.getBookAuthor() ==
-		// null) {
-		// return ResponseEntity.badRequest().build();
-		// }
-		return ResponseEntity.created(null).body(bookService.addBook(b));
+	public ResponseEntity<String> addBook(@RequestBody Book b) throws InvalidAddBookRequestException {
+		return ResponseEntity.ok(bookService.addBook(b));
+
 	}
 
-	@DeleteMapping("/books{id}")
-	public String deleteBook(int id) {
-		return bookService.deleteBook(id);
+	@DeleteMapping("/books/{id}")
+	public ResponseEntity<String> deleteBook(@PathVariable int id) throws BookNotFoundExecption {
+		return ResponseEntity.ok(bookService.deleteBook(id));
 	}
 }

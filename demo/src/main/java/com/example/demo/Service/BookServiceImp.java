@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 import com.example.demo.Entity.Book;
 import com.example.demo.Entity.EBook;
 import com.example.demo.Entity.PaperBook;
+import com.example.demo.Exception.BookNotFoundExecption;
+import com.example.demo.Exception.InvalidAddBookRequestException;
+import com.example.demo.Exception.NoBookPresentException;
 
 @Service
 public class BookServiceImp implements BookService {
@@ -27,49 +30,71 @@ public class BookServiceImp implements BookService {
 
 	}
 
-	public List<Book> showBooks() {
+	public List<Book> showBooks() throws NoBookPresentException {
+		if (books.isEmpty()) {
+			throw new NoBookPresentException();
+		}
 		return new ArrayList<>(books.values());
 	}
 
-	public List<Book> showBookByName(String name) {
+	public List<Book> showBookByName(String name) throws BookNotFoundExecption {
 		List<Book> list = new ArrayList<>();
 		books.values().stream()
 				.filter(u -> u.getBookName().toLowerCase().contains(name.toLowerCase()))
 				.forEach(u -> list.add(u));
+		if (list.isEmpty()) {
+			throw new BookNotFoundExecption("No book with this name is present");
+		}
 		return list;
 	}
 
-	public List<Book> searchByGenre(String Genre) {
+	public List<Book> searchByGenre(String Genre) throws BookNotFoundExecption {
 		List<Book> list = new ArrayList<>();
 		books.values().stream()
 				.filter(u -> u.getGenre().toLowerCase().contains(Genre.toLowerCase()))
 				.forEach(u -> list.add(u));
+		if (list.isEmpty()) {
+			throw new BookNotFoundExecption("No book of this genre is present");
+		}
 		return list;
 
 	}
 
-	public Book showBookById(int id) {
-		return books.get(id);
+	public Book showBookById(int id) throws BookNotFoundExecption {
+		Book a = books.get(id);
+		if (a == null) {
+			throw new BookNotFoundExecption("No book with this id is present");
+		}
+		return a;
 	}
 
-	public String addBook(Book b) {
+	public String addBook(Book b) throws InvalidAddBookRequestException {
+		if (b.getBookId() == 0 || b.getBookName() == null || b.getBookAuthor() == null) {
+			throw new InvalidAddBookRequestException("Bookid,BookName,BookAuthor cannot be 0 or null respectively");
+		}
 		books.put(b.getBookId(), b);
 		return "Book has been added";
 	}
 
-	public String deleteBook(int id) {
-		books.remove(id);
-		return "Book has been deleted";
+	public String deleteBook(int id) throws BookNotFoundExecption {
+		if (!books.containsKey(id)) {
+			throw new BookNotFoundExecption("Cannot delete book with id" + id + "As book not present");
+		} else {
+			books.remove(id);
+			return "Book has been deleted";
+		}
 	}
 
-	public String isType(int id) {
-		Book book = books.get(id);
-		if (book == null) {
-			return "Book not found";
-		} else if (book instanceof EBook) {
-			return "Ebook";
+	public String isType(int id) throws BookNotFoundExecption {
+		if (!books.containsKey(id)) {
+			throw new BookNotFoundExecption("No such Book present");
 		} else {
-			return "PaperBook";
+			Book b = books.get(id);
+			if (b instanceof EBook) {
+				return "Ebook";
+			} else {
+				return "PaperBook";
+			}
 		}
 	}
 }
