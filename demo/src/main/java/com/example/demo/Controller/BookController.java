@@ -1,5 +1,6 @@
 package com.example.demo.Controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
@@ -11,12 +12,21 @@ import com.example.demo.Service.BookService;
 
 @RestController
 public class BookController {
+	@Value("${spring.application.name}")
+	private String appName;
 	// List<Book> list = new ArrayList<>();
+	@Value("${spring.application.version}")
+	private double version;
 
 	private final BookService bookService;
 
 	BookController(BookService bookService) {
 		this.bookService = bookService;
+	}
+
+	@GetMapping("/appname")
+	public ResponseEntity<String> getAppName() {
+		return ResponseEntity.ok(appName + "version:" + version);
 	}
 
 	@GetMapping("/books")
